@@ -1,0 +1,25 @@
+---
+/**
+ * ============================================
+ * DASHBOARD PAGE
+ * ============================================
+ * Main dashboard page with statistics and overview
+ */
+import { DashboardPage } from '@/components/pages/home/DashboardPage';
+import '@/styles/globals.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Dashboard - Restaurant Admin</title>
+  </head>
+  <body>
+    <DashboardPage client:only="react" currentPath="/admin" />
+  </body>
+</html>

@@ -1,0 +1,26 @@
+---
+/**
+ * ============================================
+ * LANDING PAGE
+ * ============================================
+ * Public landing page with hero, features, and navigation
+ */
+import { LandingPage } from '@/components/pages/landing/LandingPage';
+import '@/styles/globals.css';
+---
+
+<!doctype html>
+<html lang="es" class="h-full scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Manifesto ERP - Gestiona tu empresa con una herramienta potente, intuitiva y diseñada para escalar sin límites." />
+    <title>Manifesto - ERP</title>
+  </head>
+  <body class="h-full">
+    <LandingPage client:only="react" />
+  </body>
+</html>

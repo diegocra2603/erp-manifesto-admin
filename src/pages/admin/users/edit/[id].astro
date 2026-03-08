@@ -1,0 +1,31 @@
+---
+/**
+ * ============================================
+ * EDIT USER PAGE
+ * ============================================
+ */
+import { UserEditPage } from '@/components/pages/user/UserEditPage';
+import '@/styles/globals.css';
+
+const { id } = Astro.params;
+const userId = id ?? '';
+
+if (!userId) {
+  return Astro.redirect('/admin/users');
+}
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Editar Usuario - Restaurant Admin</title>
+  </head>
+  <body>
+    <UserEditPage client:only="react" userId={userId} currentPath="/admin/users" />
+  </body>
+</html>
