@@ -22,6 +22,7 @@ import {
   BarChart3,
   Settings,
   Store,
+  Briefcase,
   X,
 } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
@@ -45,6 +46,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   BarChart3,
   Settings,
   Store,
+  Briefcase,
 };
 
 interface SidebarProps {

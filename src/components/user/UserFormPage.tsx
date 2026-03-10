@@ -12,6 +12,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useUser, useCreateUser, useCreateUserWithPassword, useUpdateUser } from '@/hooks/useUsers';
 import { useRoles } from '@/hooks/useRoles';
+import { useJobPositions } from '@/hooks/useJobPositions';
 import {
   AlertCircle,
   ArrowLeft,
@@ -25,6 +26,7 @@ import {
   Hash,
   Store,
   Key,
+  Briefcase,
 } from 'lucide-react';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
@@ -48,6 +50,7 @@ const baseSchema = z.object({
   code: z.string().min(1, 'El código es requerido').max(50, 'Máximo 50 caracteres'),
   phoneNumber: z.string().min(1, 'El teléfono es requerido').max(20, 'Máximo 20 caracteres'),
   roleId: z.string().min(1, 'El rol es requerido'),
+  jobPositionId: z.string().optional(),
   storeId: z.string().optional(),
   neoNetToken: z.string().optional(),
 });
@@ -85,6 +88,7 @@ export function UserFormPage({ userId }: UserFormPageProps) {
 
   const { data: user, isLoading: isLoadingUser } = useUser(userId);
   const { data: roles = [], isLoading: isLoadingRoles } = useRoles();
+  const { data: jobPositions = [], isLoading: isLoadingJobPositions } = useJobPositions();
   const createMutation = useCreateUser();
   const createWithPasswordMutation = useCreateUserWithPassword();
   const updateMutation = useUpdateUser();
@@ -105,6 +109,7 @@ export function UserFormPage({ userId }: UserFormPageProps) {
       code: '',
       phoneNumber: '',
       roleId: '',
+      jobPositionId: '',
       storeId: '',
       neoNetToken: '',
       password: '',
@@ -120,6 +125,7 @@ export function UserFormPage({ userId }: UserFormPageProps) {
         code: user.code,
         phoneNumber: user.phoneNumber,
         roleId: user.role?.id ?? '',
+        jobPositionId: user.jobPositionId || '',
         storeId: user.storeId || '',
         neoNetToken: user.neoNetToken || '',
         password: '',
@@ -132,6 +138,7 @@ export function UserFormPage({ userId }: UserFormPageProps) {
     try {
       const storeId = data.storeId || undefined;
       const neoNetToken = data.neoNetToken || undefined;
+      const jobPositionId = data.jobPositionId || undefined;
 
       if (isEditMode && userId) {
         await updateMutation.mutateAsync({
@@ -142,6 +149,7 @@ export function UserFormPage({ userId }: UserFormPageProps) {
             code: data.code,
             phoneNumber: data.phoneNumber,
             roleId: data.roleId,
+            jobPositionId,
             storeId,
             neoNetToken,
           },
@@ -155,6 +163,7 @@ export function UserFormPage({ userId }: UserFormPageProps) {
           roleId: data.roleId,
           password: data.password,
           confirmPassword: data.confirmPassword,
+          jobPositionId,
           storeId,
           neoNetToken,
         });
@@ -165,6 +174,7 @@ export function UserFormPage({ userId }: UserFormPageProps) {
           code: data.code,
           phoneNumber: data.phoneNumber,
           roleId: data.roleId,
+          jobPositionId,
           storeId,
           neoNetToken,
         });
@@ -381,13 +391,13 @@ export function UserFormPage({ userId }: UserFormPageProps) {
                   </div>
                 </div>
 
-                {/* Rol */}
+                {/* Rol y Puesto de Trabajo */}
                 <div className="mb-8">
-                  <h3 className="mb-1 text-base font-semibold text-foreground">Rol del Sistema</h3>
+                  <h3 className="mb-1 text-base font-semibold text-foreground">Rol y Puesto de Trabajo</h3>
                   <p className="mb-4 text-sm text-muted-foreground">
-                    Define los permisos y accesos del usuario
+                    Define los permisos, accesos y puesto del usuario
                   </p>
-                  <div className="max-w-sm">
+                  <div className="grid gap-5 sm:grid-cols-2">
                     <Controller
                       name="roleId"
                       control={control}
@@ -411,6 +421,47 @@ export function UserFormPage({ userId }: UserFormPageProps) {
                             roles.map((role) => (
                               <MenuItem key={role.id} value={role.id}>
                                 {role.name}
+                              </MenuItem>
+                            ))
+                          )}
+                        </TextField>
+                      )}
+                    />
+
+                    <Controller
+                      name="jobPositionId"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Puesto de Trabajo"
+                          error={!!errors.jobPositionId}
+                          helperText={errors?.jobPositionId?.message}
+                          variant="outlined"
+                          fullWidth
+                          select
+                          disabled={isLoadingJobPositions}
+                          slotProps={{
+                            input: {
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <Briefcase className="size-4 text-muted-foreground" />
+                                </InputAdornment>
+                              ),
+                            },
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>Sin asignar</em>
+                          </MenuItem>
+                          {isLoadingJobPositions ? (
+                            <MenuItem value="" disabled>
+                              Cargando puestos...
+                            </MenuItem>
+                          ) : (
+                            jobPositions.map((jp) => (
+                              <MenuItem key={jp.id} value={jp.id}>
+                                {jp.name}
                               </MenuItem>
                             ))
                           )}

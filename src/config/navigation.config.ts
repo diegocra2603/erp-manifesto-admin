@@ -29,4 +29,10 @@ export const navigationConfig: NavigationItem[] = [
     href: '/admin/users',
     icon: 'Users',
   },
+  {
+    id: 'job-positions',
+    label: 'Puestos de Trabajo',
+    href: '/admin/job-positions',
+    icon: 'Briefcase',
+  },
 ] as const;

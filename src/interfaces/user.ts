@@ -1,4 +1,5 @@
 import type { Role } from './auth';
+import type { JobPosition } from './job-position';
 
 export interface User {
   id: string;
@@ -12,6 +13,8 @@ export interface User {
   role: Role;
   storeId?: string | null;
   neoNetToken?: string | null;
+  jobPositionId?: string | null;
+  jobPosition?: JobPosition | null;
 }
 
 export interface UserCreateRequest {
@@ -22,6 +25,7 @@ export interface UserCreateRequest {
   roleId: string;
   storeId?: string;
   neoNetToken?: string;
+  jobPositionId?: string;
 }
 
 export interface UserCreateWithPasswordRequest {
@@ -34,6 +38,7 @@ export interface UserCreateWithPasswordRequest {
   confirmPassword: string;
   storeId?: string;
   neoNetToken?: string;
+  jobPositionId?: string;
 }
 
 export interface UserUpdateRequest {
@@ -44,6 +49,7 @@ export interface UserUpdateRequest {
   roleId: string;
   storeId?: string;
   neoNetToken?: string;
+  jobPositionId?: string;
 }
 
 export interface ResetPasswordRequest {

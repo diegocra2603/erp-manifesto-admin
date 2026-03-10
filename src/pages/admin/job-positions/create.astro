@@ -1,0 +1,24 @@
+---
+/**
+ * ============================================
+ * CREATE JOB POSITION PAGE
+ * ============================================
+ */
+import { JobPositionCreatePage } from '@/components/pages/job-position/JobPositionCreatePage';
+import '@/styles/globals.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Nuevo Puesto de Trabajo - Restaurant Admin</title>
+  </head>
+  <body>
+    <JobPositionCreatePage client:only="react" currentPath="/admin/job-positions" />
+  </body>
+</html>
