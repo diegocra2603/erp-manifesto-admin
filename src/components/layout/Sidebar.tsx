@@ -6,7 +6,7 @@
  */
 
 import { cn } from '@/lib/utils';
-import { navigationConfig } from '@/config';
+import { navigationConfig, bottomNavigationConfig } from '@/config';
 import {
   LayoutDashboard,
   UtensilsCrossed,
@@ -23,6 +23,7 @@ import {
   Settings,
   Store,
   Briefcase,
+  FileQuestion,
   X,
 } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
@@ -47,6 +48,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Settings,
   Store,
   Briefcase,
+  FileQuestion,
 };
 
 interface SidebarProps {
@@ -158,7 +160,40 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Footer: logo con nombre solo cuando está colapsado */}
+      {/* Bottom Navigation (Settings, etc.) */}
+      <div className="shrink-0 border-t border-border p-3 space-y-1">
+        {bottomNavigationConfig.map((item) => {
+          const Icon = item.icon ? iconMap[item.icon] : null;
+          const isActive = currentPath === item.href;
+
+          return (
+            <Tooltip
+              key={item.id}
+              title={!showExpanded ? item.label : ''}
+              placement="right"
+            >
+              <a
+                href={item.href}
+                onClick={isMobile ? onClose : undefined}
+                className={cn(
+                  'group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
+                  'hover:bg-accent hover:text-accent-foreground',
+                  isActive
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground'
+                )}
+              >
+                {Icon && <Icon className="size-5 shrink-0" />}
+                {showExpanded && (
+                  <span className="flex-1 truncate">{item.label}</span>
+                )}
+              </a>
+            </Tooltip>
+          );
+        })}
+      </div>
+
+      {/* Footer: logo con nombre solo cuando está expandido */}
       {showExpanded && (
         <div className="flex shrink-0 items-center justify-center border-t border-border px-2 py-4">
           <img

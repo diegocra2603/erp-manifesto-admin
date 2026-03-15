@@ -35,4 +35,22 @@ export const navigationConfig: NavigationItem[] = [
     href: '/admin/job-positions',
     icon: 'Briefcase',
   },
+  {
+    id: 'products',
+    label: 'Productos',
+    href: '/admin/products',
+    icon: 'Store',
+  },
+] as const;
+
+/**
+ * Bottom navigation items (shown at the bottom of the sidebar, outside the main list)
+ */
+export const bottomNavigationConfig: NavigationItem[] = [
+  {
+    id: 'settings',
+    label: 'Configuración',
+    href: '/admin/settings',
+    icon: 'Settings',
+  },
 ] as const;

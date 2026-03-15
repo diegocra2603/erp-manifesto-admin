@@ -1,0 +1,31 @@
+---
+/**
+ * ============================================
+ * EDIT PRODUCT PAGE
+ * ============================================
+ */
+import { ProductEditPage } from '@/components/pages/product/ProductEditPage';
+import '@/styles/globals.css';
+
+const { id } = Astro.params;
+const productId = id ?? '';
+
+if (!productId) {
+  return Astro.redirect('/admin/products');
+}
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Editar Producto - Restaurant Admin</title>
+  </head>
+  <body>
+    <ProductEditPage client:only="react" productId={productId} currentPath="/admin/products" />
+  </body>
+</html>
