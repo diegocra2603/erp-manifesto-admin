@@ -483,9 +483,15 @@ export function AccountsReceivableList() {
             </Alert>
           ) : fiscalResultDialog.invoice ? (
             <div className="space-y-4 mt-2">
-              <Alert severity="success" icon={<CheckCircle2 className="size-5" />}>
-                La factura fue certificada por el servicio fiscal (Ainnova).
-              </Alert>
+              {fiscalResultDialog.invoice.fiscalSerie?.startsWith('CONTINGENCIA') ? (
+                <Alert severity="warning" icon={<AlertCircle className="size-5" />}>
+                  La factura fue guardada en contingencia. El n&uacute;mero de acceso <strong>{fiscalResultDialog.invoice.fiscalSerie?.replace('CONTINGENCIA-', '')}</strong> servir&aacute; para consultar el estado de la factura una vez sea certificada.
+                </Alert>
+              ) : (
+                <Alert severity="success" icon={<CheckCircle2 className="size-5" />}>
+                  La factura fue certificada por el servicio fiscal (Ainnova).
+                </Alert>
+              )}
 
               <div className="rounded-lg border border-border bg-card p-4 space-y-3">
                 <h3 className="font-semibold text-lg">Respuesta de Ainnova</h3>

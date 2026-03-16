@@ -12,7 +12,7 @@ import { useClients } from '@/hooks/useClients';
 import { useCurrencies } from '@/hooks/useCurrencies';
 import { useCreateReceivableInvoice } from '@/hooks/useInvoices';
 import { useValidateFiscalData } from '@/hooks/useFiscalData';
-import { currencyFormat } from '@/lib/currency';
+import { currencyFormat, CurrencyType } from '@/lib/currency';
 import { AlertCircle, ArrowLeft, Save, Plus, Trash2, Search } from 'lucide-react';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
@@ -84,8 +84,11 @@ export function ReceivableInvoiceForm() {
 
   const watchedItems = watch('items');
   const watchedClientId = watch('clientId');
+  const watchedCurrencyId = watch('currencyId');
 
   const selectedClient = clients.find((c) => c.id === watchedClientId);
+  const selectedCurrency = currencies.find((c) => c.id === watchedCurrencyId);
+  const currType = selectedCurrency?.code === 'USD' ? CurrencyType.USD : CurrencyType.QTZ;
 
   // Calculate totals
   const lineCalculations = watchedItems.map((item) => {
@@ -429,13 +432,13 @@ export function ReceivableInvoiceForm() {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <span className="text-sm">{currencyFormat(lineCalculations[index]?.subtotal ?? 0)}</span>
+                        <span className="text-sm">{currencyFormat(lineCalculations[index]?.subtotal ?? 0, currType)}</span>
                       </TableCell>
                       <TableCell align="right">
-                        <span className="text-sm">{currencyFormat(lineCalculations[index]?.taxAmount ?? 0)}</span>
+                        <span className="text-sm">{currencyFormat(lineCalculations[index]?.taxAmount ?? 0, currType)}</span>
                       </TableCell>
                       <TableCell align="right">
-                        <span className="text-sm font-semibold">{currencyFormat(lineCalculations[index]?.total ?? 0)}</span>
+                        <span className="text-sm font-semibold">{currencyFormat(lineCalculations[index]?.total ?? 0, currType)}</span>
                       </TableCell>
                       <TableCell align="center">
                         <Tooltip title="Eliminar línea" arrow>
@@ -462,15 +465,15 @@ export function ReceivableInvoiceForm() {
               <div className="w-full max-w-md space-y-2">
                 <div className="flex justify-between border-b border-border py-2">
                   <span className="font-semibold">Subtotal:</span>
-                  <span className="font-semibold">{currencyFormat(totalSubtotal)}</span>
+                  <span className="font-semibold">{currencyFormat(totalSubtotal, currType)}</span>
                 </div>
                 <div className="flex justify-between border-b border-border py-2">
                   <span className="font-semibold">IVA (12%):</span>
-                  <span className="font-semibold">{currencyFormat(totalTax)}</span>
+                  <span className="font-semibold">{currencyFormat(totalTax, currType)}</span>
                 </div>
                 <div className="flex justify-between py-2 rounded px-2 bg-primary/10">
                   <span className="font-bold text-lg">Total:</span>
-                  <span className="font-bold text-lg">{currencyFormat(totalAmount)}</span>
+                  <span className="font-bold text-lg">{currencyFormat(totalAmount, currType)}</span>
                 </div>
               </div>
             </div>
