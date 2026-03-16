@@ -22,7 +22,11 @@ import {
   Send,
   Ban,
   Trash2,
+  BookOpen,
+  FileDown,
 } from 'lucide-react';
+import { getInvoicePdfUrl, downloadFromBlobUrl } from '@/services/invoice.service';
+import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
@@ -56,6 +60,33 @@ export function AccountsPayableList() {
   const emitMutation = useEmitInvoice();
   const voidMutation = useVoidInvoice();
   const deleteMutation = useDeleteInvoice();
+
+  // PDF preview dialog
+  const [pdfPreview, setPdfPreview] = useState<{
+    open: boolean;
+    url: string | null;
+    fileName: string;
+    loading: boolean;
+    error: string | null;
+  }>({ open: false, url: null, fileName: '', loading: false, error: null });
+
+  const handlePreviewPdf = async (invoiceId: string) => {
+    setPdfPreview({ open: true, url: null, fileName: '', loading: true, error: null });
+    try {
+      const { url, fileName } = await getInvoicePdfUrl(invoiceId);
+      setPdfPreview({ open: true, url, fileName, loading: false, error: null });
+    } catch (err) {
+      setPdfPreview({
+        open: true, url: null, fileName: '', loading: false,
+        error: err instanceof Error ? err.message : 'Error al obtener el PDF',
+      });
+    }
+  };
+
+  const closePdfPreview = () => {
+    if (pdfPreview.url) URL.revokeObjectURL(pdfPreview.url);
+    setPdfPreview({ open: false, url: null, fileName: '', loading: false, error: null });
+  };
 
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -145,6 +176,32 @@ export function AccountsPayableList() {
       getValue: (row) => String(row.total),
     },
     {
+      id: 'journalEntry',
+      label: 'Partida',
+      sortable: false,
+      width: 100,
+      render: (row) => {
+        if (!row.journalEntryId) {
+          return <span className="text-xs text-muted-foreground">-</span>;
+        }
+        return (
+          <Tooltip title="Ver partida contable" arrow>
+            <Chip
+              icon={<BookOpen className="size-3" />}
+              label="Partida"
+              size="small"
+              color="info"
+              variant="outlined"
+              clickable
+              onClick={() => window.open(`/admin/accounting/journal-entries`, '_blank')}
+              sx={{ fontSize: '0.7rem' }}
+            />
+          </Tooltip>
+        );
+      },
+      getValue: (row) => row.journalEntryId ?? '',
+    },
+    {
       id: 'status',
       label: 'Estado',
       sortable: true,
@@ -225,6 +282,17 @@ export function AccountsPayableList() {
           rowsPerPageOptions={[5, 10, 25, 50]}
           actions={(item) => (
             <div className="flex gap-1 justify-end">
+              {item.status !== 1 && (
+                <Tooltip title="Ver PDF" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() => handlePreviewPdf(item.id)}
+                    color="default"
+                  >
+                    <FileDown className="size-4" />
+                  </IconButton>
+                </Tooltip>
+              )}
               {item.status === 1 && (
                 <Tooltip title="Emitir factura" arrow>
                   <IconButton
@@ -285,6 +353,53 @@ export function AccountsPayableList() {
             disabled={actionPending}
           >
             {actionPending ? 'Procesando...' : dialogTexts.button}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── PDF Preview Dialog ─────────────────────────── */}
+      <Dialog
+        open={pdfPreview.open}
+        onClose={closePdfPreview}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { height: '90vh' } }}
+      >
+        <DialogTitle className="flex items-center gap-2">
+          <FileDown className="size-5" />
+          Vista Previa - {pdfPreview.fileName || 'Factura'}
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {pdfPreview.loading && (
+            <div className="flex items-center justify-center flex-1">
+              <CircularProgress />
+            </div>
+          )}
+          {pdfPreview.error && (
+            <div className="p-4">
+              <Alert severity="error">{pdfPreview.error}</Alert>
+            </div>
+          )}
+          {pdfPreview.url && (
+            <iframe
+              src={pdfPreview.url}
+              title="Vista previa PDF"
+              style={{ flex: 1, border: 'none', width: '100%', height: '100%' }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          {pdfPreview.url && (
+            <Button
+              onClick={() => downloadFromBlobUrl(pdfPreview.url!, pdfPreview.fileName)}
+              startIcon={<FileDown className="size-4" />}
+              variant="outlined"
+            >
+              Descargar
+            </Button>
+          )}
+          <Button onClick={closePdfPreview} variant="contained">
+            Cerrar
           </Button>
         </DialogActions>
       </Dialog>

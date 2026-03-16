@@ -27,6 +27,7 @@ import {
   FileCheck,
   Upload,
   FileDown,
+  BookOpen,
 } from 'lucide-react';
 import { getInvoicePdfUrl, downloadFromBlobUrl } from '@/services/invoice.service';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -232,6 +233,32 @@ export function AccountsReceivableList() {
         );
       },
       getValue: (row) => row.fiscalSerie ?? '',
+    },
+    {
+      id: 'journalEntry',
+      label: 'Partida',
+      sortable: false,
+      width: 100,
+      render: (row) => {
+        if (!row.journalEntryId) {
+          return <span className="text-xs text-muted-foreground">-</span>;
+        }
+        return (
+          <Tooltip title="Ver partida contable" arrow>
+            <Chip
+              icon={<BookOpen className="size-3" />}
+              label="Partida"
+              size="small"
+              color="info"
+              variant="outlined"
+              clickable
+              onClick={() => window.open(`/admin/accounting/journal-entries`, '_blank')}
+              sx={{ fontSize: '0.7rem' }}
+            />
+          </Tooltip>
+        );
+      },
+      getValue: (row) => row.journalEntryId ?? '',
     },
     {
       id: 'status',
@@ -498,6 +525,13 @@ export function AccountsReceivableList() {
                     <p className="font-bold">{currencyFormat(fiscalResultDialog.invoice.total)}</p>
                   </div>
                 </div>
+
+                {fiscalResultDialog.invoice.journalEntryId && (
+                  <div className="flex items-center gap-2 pt-2">
+                    <BookOpen className="size-4 text-blue-500" />
+                    <span className="text-sm text-muted-foreground">Partida contable generada autom&aacute;ticamente</span>
+                  </div>
+                )}
               </div>
             </div>
           ) : null}
