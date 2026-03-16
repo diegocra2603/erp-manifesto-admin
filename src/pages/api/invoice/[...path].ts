@@ -36,9 +36,22 @@ async function proxyRequest(method: string, backendPath: string, authHeader: str
   });
   clearTimeout(timeoutId);
 
+  // Pass through binary responses (PDF, etc.)
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('application/pdf') || contentType.includes('application/octet-stream')) {
+    if (!response.ok) {
+      return new Response(JSON.stringify({ title: `Error ${response.status}`, status: response.status, errors: { 'Server.Error': [`Error ${response.status}`] } }), { status: response.status, headers: { 'Content-Type': 'application/json' } });
+    }
+    const responseHeaders = new Headers();
+    responseHeaders.set('Content-Type', contentType);
+    const disposition = response.headers.get('content-disposition');
+    if (disposition) responseHeaders.set('Content-Disposition', disposition);
+    return new Response(response.body, { status: 200, headers: responseHeaders });
+  }
+
   let data = null;
   const text = await response.text();
-  if (text && response.headers.get('content-type')?.includes('application/json')) {
+  if (text && contentType.includes('application/json')) {
     try { data = JSON.parse(text); } catch {}
   }
 

@@ -120,3 +120,17 @@ export function useDeleteInvoice() {
     },
   });
 }
+
+export function useUploadContingency() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await invoiceService.uploadContingency();
+      if (error) throw new Error(error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: invoiceKeys.all });
+    },
+  });
+}

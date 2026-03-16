@@ -12,6 +12,7 @@ import {
   useEmitInvoice,
   useVoidInvoice,
   useDeleteInvoice,
+  useUploadContingency,
 } from '@/hooks/useInvoices';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { currencyFormat } from '@/lib/currency';
@@ -24,7 +25,11 @@ import {
   Trash2,
   CheckCircle2,
   FileCheck,
+  Upload,
+  FileDown,
 } from 'lucide-react';
+import { getInvoicePdfUrl, downloadFromBlobUrl } from '@/services/invoice.service';
+import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
@@ -59,6 +64,9 @@ export function AccountsReceivableList() {
   const emitMutation = useEmitInvoice();
   const voidMutation = useVoidInvoice();
   const deleteMutation = useDeleteInvoice();
+  const uploadContingencyMutation = useUploadContingency();
+
+  const hasContingency = invoices.some(i => i.fiscalSerie?.startsWith('CONTINGENCIA'));
 
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -72,6 +80,36 @@ export function AccountsReceivableList() {
     invoice: Invoice | null;
     error: string | null;
   }>({ open: false, invoice: null, error: null });
+
+  // PDF preview dialog
+  const [pdfPreview, setPdfPreview] = useState<{
+    open: boolean;
+    url: string | null;
+    fileName: string;
+    loading: boolean;
+    error: string | null;
+  }>({ open: false, url: null, fileName: '', loading: false, error: null });
+
+  const handlePreviewPdf = async (invoiceId: string) => {
+    setPdfPreview({ open: true, url: null, fileName: '', loading: true, error: null });
+    try {
+      const { url, fileName } = await getInvoicePdfUrl(invoiceId);
+      setPdfPreview({ open: true, url, fileName, loading: false, error: null });
+    } catch (err) {
+      setPdfPreview({
+        open: true,
+        url: null,
+        fileName: '',
+        loading: false,
+        error: err instanceof Error ? err.message : 'Error al obtener el PDF',
+      });
+    }
+  };
+
+  const closePdfPreview = () => {
+    if (pdfPreview.url) URL.revokeObjectURL(pdfPreview.url);
+    setPdfPreview({ open: false, url: null, fileName: '', loading: false, error: null });
+  };
 
   const handleConfirmAction = async () => {
     if (!confirmDialog.item) return;
@@ -172,17 +210,27 @@ export function AccountsReceivableList() {
       id: 'fiscal',
       label: 'Datos Fiscales',
       sortable: false,
-      width: 180,
-      render: (row) => (
-        row.fiscalSerie ? (
+      width: 200,
+      render: (row) => {
+        if (!row.fiscalSerie) {
+          return <span className="text-xs text-muted-foreground">Sin certificar</span>;
+        }
+        if (row.fiscalSerie.startsWith('CONTINGENCIA')) {
+          const numAcceso = row.fiscalSerie.replace('CONTINGENCIA-', '');
+          return (
+            <div className="text-xs">
+              <Chip label="Contingencia" size="small" color="warning" variant="outlined" sx={{ mb: 0.5 }} />
+              <div>Acceso: <strong>{numAcceso}</strong></div>
+            </div>
+          );
+        }
+        return (
           <div className="text-xs">
             <div>Serie: <strong>{row.fiscalSerie}</strong></div>
             <div>No: <strong>{row.fiscalNumero}</strong></div>
           </div>
-        ) : (
-          <span className="text-xs text-muted-foreground">Sin certificar</span>
-        )
-      ),
+        );
+      },
       getValue: (row) => row.fiscalSerie ?? '',
     },
     {
@@ -217,15 +265,55 @@ export function AccountsReceivableList() {
             </p>
           </div>
         </div>
-        <Button
-          variant="contained"
-          startIcon={<Plus className="size-5" />}
-          onClick={() => (window.location.href = '/admin/accounting/receivable/create')}
-          size="large"
-        >
-          Nueva Factura
-        </Button>
+        <div className="flex gap-2">
+          {hasContingency && (
+            <Button
+              variant="outlined"
+              color="warning"
+              startIcon={uploadContingencyMutation.isPending ? null : <Upload className="size-5" />}
+              onClick={async () => {
+                try {
+                  const result = await uploadContingencyMutation.mutateAsync();
+                  if (result) {
+                    setFiscalResultDialog({
+                      open: true,
+                      invoice: null,
+                      error: null,
+                    });
+                  }
+                } catch {}
+              }}
+              disabled={uploadContingencyMutation.isPending}
+              size="large"
+            >
+              {uploadContingencyMutation.isPending ? 'Certificando...' : 'Certificar Contingencia'}
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            startIcon={<Plus className="size-5" />}
+            onClick={() => (window.location.href = '/admin/accounting/receivable/create')}
+            size="large"
+          >
+            Nueva Factura
+          </Button>
+        </div>
       </div>
+
+      {/* Contingency upload result */}
+      {uploadContingencyMutation.isSuccess && (
+        <Alert severity="success">
+          Documentos en contingencia certificados exitosamente.
+        </Alert>
+      )}
+
+      {uploadContingencyMutation.error && (
+        <Alert severity="error">
+          {uploadContingencyMutation.error instanceof Error
+            ? uploadContingencyMutation.error.message
+            : 'Error al certificar documentos en contingencia'}
+        </Alert>
+      )}
 
       {/* Alerts */}
       {error && (
@@ -266,6 +354,17 @@ export function AccountsReceivableList() {
           rowsPerPageOptions={[5, 10, 25, 50]}
           actions={(item) => (
             <div className="flex gap-1 justify-end">
+              {item.status !== 1 && (
+                <Tooltip title="Ver PDF" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() => handlePreviewPdf(item.id)}
+                    color="default"
+                  >
+                    <FileDown className="size-4" />
+                  </IconButton>
+                </Tooltip>
+              )}
               {item.status === 1 && (
                 <Tooltip title="Emitir factura (enviar a Ainnova)" arrow>
                   <IconButton
@@ -404,10 +503,72 @@ export function AccountsReceivableList() {
           ) : null}
         </DialogContent>
         <DialogActions>
+          {fiscalResultDialog.invoice && !fiscalResultDialog.error && (
+            <Button
+              onClick={() => {
+                const id = fiscalResultDialog.invoice!.id;
+                setFiscalResultDialog({ open: false, invoice: null, error: null });
+                handlePreviewPdf(id);
+              }}
+              startIcon={<FileDown className="size-4" />}
+              variant="outlined"
+            >
+              Ver PDF
+            </Button>
+          )}
           <Button
             onClick={() => setFiscalResultDialog({ open: false, invoice: null, error: null })}
             variant="contained"
           >
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── PDF Preview Dialog ─────────────────────────── */}
+      <Dialog
+        open={pdfPreview.open}
+        onClose={closePdfPreview}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { height: '90vh' } }}
+      >
+        <DialogTitle className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <FileCheck className="size-5" />
+            Vista Previa - {pdfPreview.fileName || 'Factura'}
+          </span>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {pdfPreview.loading && (
+            <div className="flex items-center justify-center flex-1">
+              <CircularProgress />
+            </div>
+          )}
+          {pdfPreview.error && (
+            <div className="p-4">
+              <Alert severity="error">{pdfPreview.error}</Alert>
+            </div>
+          )}
+          {pdfPreview.url && (
+            <iframe
+              src={pdfPreview.url}
+              title="Vista previa PDF"
+              style={{ flex: 1, border: 'none', width: '100%', height: '100%' }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          {pdfPreview.url && (
+            <Button
+              onClick={() => downloadFromBlobUrl(pdfPreview.url!, pdfPreview.fileName)}
+              startIcon={<FileDown className="size-4" />}
+              variant="outlined"
+            >
+              Descargar
+            </Button>
+          )}
+          <Button onClick={closePdfPreview} variant="contained">
             Cerrar
           </Button>
         </DialogActions>

@@ -54,15 +54,38 @@ export const GET: APIRoute = async ({ request }) => {
 
     clearTimeout(timeoutId);
 
-    const data = await response.json();
+    const text = await response.text();
+    let data = null;
+    if (text) {
+      try { data = JSON.parse(text); } catch { /* empty or non-JSON response */ }
+    }
 
     // If error, return it
     if (!response.ok) {
-      return new Response(JSON.stringify(data), {
+      return new Response(JSON.stringify(data ?? {
+        type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
+        title: 'Unauthorized',
+        status: response.status,
+        errors: { 'Auth.Failed': ['No se pudo verificar el token'] },
+        traceId: crypto.randomUUID(),
+      }), {
         status: response.status,
         headers: {
           'Content-Type': 'application/json',
         },
+      });
+    }
+
+    if (!data) {
+      return new Response(JSON.stringify({
+        type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
+        title: 'Error de servidor',
+        status: 502,
+        errors: { 'Server.Error': ['Respuesta vacía del servidor backend'] },
+        traceId: crypto.randomUUID(),
+      } as ApiErrorResponse), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
