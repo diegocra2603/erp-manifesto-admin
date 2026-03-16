@@ -1,0 +1,31 @@
+---
+/**
+ * ============================================
+ * JOURNAL ENTRY DETAIL PAGE
+ * ============================================
+ */
+import { JournalEntryDetailPageWrapper } from '@/components/pages/accounting/JournalEntryDetailPageWrapper';
+import '@/styles/globals.css';
+
+const { id } = Astro.params;
+const entryId = id ?? '';
+
+if (!entryId) {
+  return Astro.redirect('/admin/accounting/journal-entries');
+}
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Detalle de Partida - Contabilidad</title>
+  </head>
+  <body>
+    <JournalEntryDetailPageWrapper client:only="react" entryId={entryId} currentPath="/admin/accounting/journal-entries" />
+  </body>
+</html>

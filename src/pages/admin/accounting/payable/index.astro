@@ -1,0 +1,25 @@
+---
+/**
+ * ============================================
+ * ACCOUNTS PAYABLE PAGE
+ * ============================================
+ * Admin page for viewing accounts payable
+ */
+import { AccountsPayablePage } from '@/components/pages/accounting/AccountsPayablePage';
+import '@/styles/globals.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Cuentas por Pagar - Contabilidad</title>
+  </head>
+  <body>
+    <AccountsPayablePage client:only="react" currentPath="/admin/accounting/payable" />
+  </body>
+</html>

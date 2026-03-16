@@ -1,0 +1,24 @@
+---
+/**
+ * ============================================
+ * CLIENTS PAGE
+ * ============================================
+ * Admin page for managing clients
+ */
+import { ClientsPage } from '@/components/pages/accounting/ClientsPage';
+import '@/styles/globals.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Clientes - Contabilidad</title>
+  </head>
+  <body>
+    <ClientsPage client:only="react" currentPath="/admin/accounting/clients" />
+  </body>
+</html>

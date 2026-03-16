@@ -5,8 +5,9 @@
  * Navigation sidebar for the dashboard
  */
 
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { navigationConfig, bottomNavigationConfig } from '@/config';
+import { navigationConfig, bottomNavigationConfig, type NavigationItem } from '@/config';
 import {
   LayoutDashboard,
   UtensilsCrossed,
@@ -24,6 +25,15 @@ import {
   Store,
   Briefcase,
   FileQuestion,
+  BookOpen,
+  TrendingUp,
+  TrendingDown,
+  CircleDollarSign,
+  Receipt,
+  UserCheck,
+  Truck,
+  ChevronDown,
+  ChevronRight,
   X,
 } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
@@ -49,6 +59,13 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Store,
   Briefcase,
   FileQuestion,
+  BookOpen,
+  TrendingUp,
+  TrendingDown,
+  CircleDollarSign,
+  Receipt,
+  UserCheck,
+  Truck,
 };
 
 interface SidebarProps {
@@ -75,6 +92,111 @@ export function Sidebar({
   const logoNombreSrc = isDark
     ? '/assets/logo/logo-manifesto-nombre-blanco.svg'
     : '/assets/logo/logo-manifesto-nombre-negro.svg';
+
+  // Track which collapsible sections are open
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+    // Auto-open section if current path is within it
+    const initial: Record<string, boolean> = {};
+    navigationConfig.forEach((item) => {
+      if (item.children && currentPath?.startsWith(item.href)) {
+        initial[item.id] = true;
+      }
+    });
+    return initial;
+  });
+
+  const toggleSection = (id: string) => {
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const renderNavItem = (item: NavigationItem, isChild = false) => {
+    const Icon = item.icon ? iconMap[item.icon] : null;
+    const isActive = currentPath === item.href;
+    const hasChildren = item.children && item.children.length > 0;
+    const isOpen = openSections[item.id] ?? false;
+    const isParentActive = hasChildren && currentPath?.startsWith(item.href);
+
+    if (hasChildren) {
+      return (
+        <div key={item.id}>
+          <Tooltip
+            title={!showExpanded ? item.label : ''}
+            placement="right"
+          >
+            <button
+              onClick={() => toggleSection(item.id)}
+              className={cn(
+                'group flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
+                'hover:bg-accent hover:text-accent-foreground',
+                isParentActive
+                  ? 'text-foreground font-semibold'
+                  : 'text-muted-foreground'
+              )}
+            >
+              {Icon && <Icon className="size-5 shrink-0" />}
+              {showExpanded && (
+                <>
+                  <span className="flex-1 truncate text-left">{item.label}</span>
+                  {isOpen ? (
+                    <ChevronDown className="size-4 shrink-0" />
+                  ) : (
+                    <ChevronRight className="size-4 shrink-0" />
+                  )}
+                </>
+              )}
+            </button>
+          </Tooltip>
+          {showExpanded && isOpen && (
+            <div className="ml-4 mt-1 space-y-0.5 border-l border-border pl-2">
+              {item.children!.map((child) => renderNavItem(child, true))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Tooltip
+        key={item.id}
+        title={!showExpanded ? item.label : ''}
+        placement="right"
+      >
+        <a
+          href={item.href}
+          onClick={isMobile ? onClose : undefined}
+          className={cn(
+            'group flex items-center gap-3 rounded-md px-3 text-sm font-medium transition-all',
+            isChild ? 'py-2' : 'py-2.5',
+            'hover:bg-accent hover:text-accent-foreground',
+            isActive
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'text-muted-foreground'
+          )}
+        >
+          {Icon && (
+            <Badge
+              badgeContent={item.badge}
+              color="error"
+              variant="standard"
+              max={99}
+            >
+              <Icon className={cn('shrink-0', isChild ? 'size-4' : 'size-5')} />
+            </Badge>
+          )}
+
+          {showExpanded && (
+            <span className="flex-1 truncate">{item.label}</span>
+          )}
+
+          {showExpanded && item.badge && (
+            <span className="flex size-5 items-center justify-center rounded-full bg-error text-[10px] font-semibold text-error-foreground">
+              {item.badge}
+            </span>
+          )}
+        </a>
+      </Tooltip>
+    );
+  };
 
   return (
     <aside
@@ -113,51 +235,7 @@ export function Sidebar({
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-        {navigationConfig.map((item) => {
-          const Icon = item.icon ? iconMap[item.icon] : null;
-          const isActive = currentPath === item.href;
-
-          return (
-            <Tooltip
-              key={item.id}
-              title={!showExpanded ? item.label : ''}
-              placement="right"
-            >
-              <a
-                href={item.href}
-                onClick={isMobile ? onClose : undefined}
-                className={cn(
-                  'group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all',
-                  'hover:bg-accent hover:text-accent-foreground',
-                  isActive
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-muted-foreground'
-                )}
-              >
-                {Icon && (
-                  <Badge
-                    badgeContent={item.badge}
-                    color="error"
-                    variant="standard"
-                    max={99}
-                  >
-                    <Icon className="size-5 shrink-0" />
-                  </Badge>
-                )}
-
-                {showExpanded && (
-                  <span className="flex-1 truncate">{item.label}</span>
-                )}
-
-                {showExpanded && item.badge && (
-                  <span className="flex size-5 items-center justify-center rounded-full bg-error text-[10px] font-semibold text-error-foreground">
-                    {item.badge}
-                  </span>
-                )}
-              </a>
-            </Tooltip>
-          );
-        })}
+        {navigationConfig.map((item) => renderNavItem(item))}
       </nav>
 
       {/* Bottom Navigation (Settings, etc.) */}

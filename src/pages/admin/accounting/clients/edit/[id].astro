@@ -1,0 +1,27 @@
+---
+/**
+ * ============================================
+ * CLIENT EDIT PAGE
+ * ============================================
+ * Admin page for editing an existing client
+ */
+import { ClientEditPage } from '@/components/pages/accounting/ClientEditPage';
+import '@/styles/globals.css';
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect('/admin/accounting/clients');
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Editar Cliente - Contabilidad</title>
+  </head>
+  <body>
+    <ClientEditPage client:only="react" clientId={id} currentPath="/admin/accounting/clients" />
+  </body>
+</html>

@@ -1,0 +1,25 @@
+---
+/**
+ * ============================================
+ * ACCOUNTING PERIODS PAGE
+ * ============================================
+ * Admin page for managing accounting periods
+ */
+import { AccountingPeriodsPage } from '@/components/pages/accounting/AccountingPeriodsPage';
+import '@/styles/globals.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Períodos Contables - Contabilidad</title>
+  </head>
+  <body>
+    <AccountingPeriodsPage client:only="react" currentPath="/admin/accounting/periods" />
+  </body>
+</html>

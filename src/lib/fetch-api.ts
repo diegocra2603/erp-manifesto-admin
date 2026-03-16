@@ -7,7 +7,7 @@
 
 import { appConfig } from '@/config';
 import type { ApiErrorResponse } from './api-types';
-import { isApiError } from './api-helpers';
+import { isApiError, parseApiError } from './api-helpers';
 
 // Base URL for API requests (empty string for same-origin requests)
 const BASE_URL = '';
@@ -76,7 +76,7 @@ export async function fetchApi<T = any>(
     // Check if response is an error
     if (!response.ok) {
       const errorMessage = isApiError(data)
-        ? data.title
+        ? parseApiError(data)
         : `Error ${response.status}: ${response.statusText}`;
 
       return {

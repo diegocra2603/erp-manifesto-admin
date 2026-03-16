@@ -1,0 +1,25 @@
+---
+/**
+ * ============================================
+ * SUPPLIERS PAGE
+ * ============================================
+ * Admin page for managing suppliers
+ */
+import { SuppliersPage } from '@/components/pages/accounting/SuppliersPage';
+import '@/styles/globals.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Proveedores - Contabilidad</title>
+  </head>
+  <body>
+    <SuppliersPage client:only="react" currentPath="/admin/accounting/suppliers" />
+  </body>
+</html>

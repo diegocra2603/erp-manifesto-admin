@@ -1,0 +1,24 @@
+---
+/**
+ * ============================================
+ * CREATE PAYABLE INVOICE PAGE
+ * ============================================
+ */
+import { PayableInvoiceCreatePage } from '@/components/pages/accounting/PayableInvoiceCreatePage';
+import '@/styles/globals.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Registrar Factura de Proveedor - Contabilidad</title>
+  </head>
+  <body>
+    <PayableInvoiceCreatePage client:only="react" currentPath="/admin/accounting/payable" />
+  </body>
+</html>
