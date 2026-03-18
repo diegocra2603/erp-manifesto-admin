@@ -7,7 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as invoiceService from '@/services/invoice.service';
-import type { CreateReceivableInvoiceRequest, CreatePayableInvoiceRequest } from '@/lib/api-types';
+import type { CreateReceivableInvoiceRequest, CreatePayableInvoiceRequest, CreateCreditNoteRequest } from '@/lib/api-types';
 
 export const invoiceKeys = {
   all: ['invoices'] as const,
@@ -76,6 +76,20 @@ export function useCreatePayableInvoice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: invoiceKeys.payable() });
+    },
+  });
+}
+
+export function useCreateCreditNote() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ invoiceId, data }: { invoiceId: string; data: CreateCreditNoteRequest }) => {
+      const { data: invoice, error } = await invoiceService.createCreditNote(invoiceId, data);
+      if (error) throw new Error(error);
+      return invoice;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: invoiceKeys.receivable() });
     },
   });
 }

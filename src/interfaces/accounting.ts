@@ -291,6 +291,10 @@ export interface Invoice {
   fiscalSerie: string | null;
   fiscalNumero: string | null;
   fiscalAutorizacion: string | null;
+  originalInvoiceId: string | null;
+  originalInvoiceNumber: string | null;
+  originalFiscalSerie: string | null;
+  originalFiscalNumero: string | null;
   items: InvoiceItem[];
 }
 
@@ -306,6 +310,12 @@ export interface CreateReceivableInvoiceRequest {
   clientId: string;
   currencyId: string;
   exchangeRate: number;
+  notes?: string;
+  items: CreateInvoiceItemRequest[];
+}
+
+export interface CreateCreditNoteRequest {
+  date: string;
   notes?: string;
   items: CreateInvoiceItemRequest[];
 }

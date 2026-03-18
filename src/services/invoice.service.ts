@@ -6,7 +6,7 @@
  */
 
 import { get, post, del, fetchApi } from '@/lib/fetch-api';
-import type { Invoice, CreateReceivableInvoiceRequest, CreatePayableInvoiceRequest } from '@/lib/api-types';
+import type { Invoice, CreateReceivableInvoiceRequest, CreatePayableInvoiceRequest, CreateCreditNoteRequest } from '@/lib/api-types';
 import { appConfig } from '@/config';
 
 const ENDPOINT = '/api/invoice';
@@ -29,6 +29,10 @@ export async function createReceivableInvoice(data: CreateReceivableInvoiceReque
 
 export async function createPayableInvoice(data: CreatePayableInvoiceRequest) {
   return post<Invoice>(`${ENDPOINT}/payable`, data);
+}
+
+export async function createCreditNote(invoiceId: string, data: CreateCreditNoteRequest) {
+  return post<Invoice>(`${ENDPOINT}/${invoiceId}/credit-note`, data);
 }
 
 export async function emitInvoice(id: string) {

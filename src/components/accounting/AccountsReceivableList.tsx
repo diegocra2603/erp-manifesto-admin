@@ -28,7 +28,9 @@ import {
   Upload,
   FileDown,
   BookOpen,
+  FileMinus,
 } from 'lucide-react';
+import { CreditNoteForm } from './CreditNoteForm';
 import { getInvoicePdfUrl, downloadFromBlobUrl } from '@/services/invoice.service';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
@@ -68,6 +70,9 @@ export function AccountsReceivableList() {
   const uploadContingencyMutation = useUploadContingency();
 
   const hasContingency = invoices.some(i => i.fiscalSerie?.startsWith('CONTINGENCIA'));
+
+  // Credit note form state
+  const [creditNoteInvoice, setCreditNoteInvoice] = useState<Invoice | null>(null);
 
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -173,10 +178,34 @@ export function AccountsReceivableList() {
 
   const columns: Column<Invoice>[] = [
     {
+      id: 'invoiceType',
+      label: 'Tipo',
+      sortable: true,
+      width: 100,
+      render: (row) => (
+        <Chip
+          label={row.invoiceType === 3 ? 'NC' : 'FAC'}
+          size="small"
+          color={row.invoiceType === 3 ? 'warning' : 'primary'}
+          variant="outlined"
+          sx={{ fontSize: '0.7rem' }}
+        />
+      ),
+      getValue: (row) => row.invoiceTypeName,
+    },
+    {
       id: 'invoiceNumber',
-      label: 'No. Factura',
+      label: 'No. Documento',
       sortable: true,
       width: 140,
+      render: (row) => (
+        <div>
+          <div className="font-medium">{row.invoiceNumber}</div>
+          {row.originalInvoiceNumber && (
+            <div className="text-xs text-muted-foreground">Ref: {row.originalInvoiceNumber}</div>
+          )}
+        </div>
+      ),
       getValue: (row) => row.invoiceNumber,
     },
     {
@@ -278,6 +307,19 @@ export function AccountsReceivableList() {
   ];
 
   const dialogTexts = getDialogTexts();
+
+  // If credit note form is open, show it instead of the list
+  if (creditNoteInvoice) {
+    return (
+      <CreditNoteForm
+        invoice={creditNoteInvoice}
+        onClose={() => setCreditNoteInvoice(null)}
+        onSuccess={() => {
+          setCreditNoteInvoice(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -403,8 +445,19 @@ export function AccountsReceivableList() {
                   </IconButton>
                 </Tooltip>
               )}
+              {item.status === 2 && item.invoiceType === 1 && (
+                <Tooltip title="Crear Nota de Credito" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() => setCreditNoteInvoice(item)}
+                    color="info"
+                  >
+                    <FileMinus className="size-4" />
+                  </IconButton>
+                </Tooltip>
+              )}
               {item.status === 2 && (
-                <Tooltip title="Anular factura" arrow>
+                <Tooltip title="Anular documento" arrow>
                   <IconButton
                     size="small"
                     onClick={() => setConfirmDialog({ open: true, action: 'void', item })}
